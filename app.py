@@ -1,10 +1,11 @@
 from flask import Flask, render_template
+import init_db
 
 app = Flask(__name__)
 
 @app.route("/")
-def index():
-    return "welcome to our Flask Web Application!"
+def login():
+    return render_template("login.html")
 
 @app.route("/about")
 def about():
