@@ -56,6 +56,9 @@ def about():
 def mainThing():
     return render_template("mainThing.html")
 
+@app.route("/resultsPage")
+def resultsPage():
+    return render_template("resultsPage.html")
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,0 +1,89 @@
+<!-- ts genuinely PMOd -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Get a Quote</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link 
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" 
+        rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+
+                    <h3 class="mb-4 text-center">Get a Travel Insurance Quote</h3>
+                    <p class="text-center text-muted">
+                        Input information below to receive a quote.
+                    </p>
+
+                    <form method="POST">
+
+                        <!-- Name -->
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+
+                        <!-- Age -->
+                        <div class="mb-3">
+                            <label class="form-label">Age</label>
+                            <input type="number" name="age" class="form-control" required>
+                        </div>
+
+                        <!-- Salary -->
+                        <div class="mb-3">
+                            <label class="form-label">Approximate Per-Year Salary</label>
+                            <input type="text" name="salary" class="form-control" required>
+                        </div>
+
+                        <!-- People traveling -->
+                        <div class="mb-3">
+                            <label class="form-label">Number of People Traveling</label>
+                            <input type="number" name="people" class="form-control" required>
+                        </div>
+
+                        <!-- Duration -->
+                        <div class="mb-3">
+                            <label class="form-label">Trip Duration (days)</label>
+                            <input type="number" name="duration" class="form-control" required>
+                        </div>
+
+                        <!-- Medical condition -->
+                        <div class="mb-4">
+                            <label class="form-label">Existing Medical Condition</label>
+                            <select name="medical" class="form-select" required>
+                                <option value="" disabled selected>Select...</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                Quote calculation
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
