@@ -54,11 +54,18 @@ def about():
     
 @app.route("/mainThing")
 def mainThing():
+    if request.method == "POST":
     return render_template("mainThing.html")
 
-@app.route("/resultsPage")
+@app.route("/resultsPage", method=["GET", "POST"])
 def resultsPage():
+    conn = sqlite3.connect("database.db")
+    c = conn.cursor()
+    if request.method == "POST":
+        name = request.form["name"]
+        c.execute("INSERT INTO userInfoCache (name, ) VALUES (?,)", (name, ))
     return render_template("resultsPage.html")
+
 
 if __name__ == "__main__":
     app.run(debug=True)
