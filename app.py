@@ -47,6 +47,16 @@ def init_db(): #defining init_db() to initialize the database
 init_db() 
 # Using flask. routes the homepage / to login, using the methods GET and POST.
 # GET indicate the user is visiting the page, thus things are required to be gotten, while POST indicate the user submits a form.
+
+def login_required(func):
+    from functools import wraps
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if "id" not in session:
+            return redirect(url_for("login"))
+        return func(*args, **kwargs)
+    return wrapper
+
 @app.route("/", methods=["GET","POST"])
 def login():
     error = None 
@@ -58,14 +68,19 @@ def login():
 
         email = request.form["email"]
         password = request.form["password"]
+        
 
-        cursor.execute("SELECT passwordHash FROM users WHERE email = ?", (email,))
+
+        cursor.execute("SELECT id, passwordHash FROM users WHERE email = ?", (email, ))
         user = cursor.fetchone()
         connection.close()
 
         if user:
-            realPassword = user[0] #fuckin tuples bruh
+            user_id=user[0]
+            realPassword = user[1] #fuckin tuples bruh
+            
             if realPassword == password:
+                session["id"] = user[0]
                 return redirect(url_for("mainThing"))
             else:
                 error = "bro think he slick skull emoji you are NOT miwa kasumi from jjk"
@@ -105,10 +120,12 @@ def about():
     
 @app.route("/mainThing", methods=["GET","POST"])
 def mainThing():
+    @login_required
     return render_template("mainThing.html")
 
 @app.route("/resultsPage", methods=["GET", "POST"])
 def resultsPage():
+    @login_required
     connection = sqlite3.connect("database.db")
     cursor = conn.cursor()
     if request.method == "POST":
