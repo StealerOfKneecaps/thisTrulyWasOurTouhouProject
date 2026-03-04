@@ -33,39 +33,14 @@
                         </thead>
 
                         <tbody>
-
+                            {%for r in results%}
                             <tr>
-                                <td>placeholder firm</td>
-                                <td>placeholder price</td>
-                                <td>A, B, C, D, E, F</td>
+                                <td>{{r.name}}</td>
+                                <td>{{r.price}}</td>
+                                <td>{{r.coverage | join(", ")}}</td>
                             </tr>
-
-                            <tr>
-                                <td>placeholder firm</td>
-                                <td>placeholder price</td>
-                                <td>A, B, C</td>
-                            </tr>
-
-                            <tr>
-                                <td>placeholder firm</td>
-                                <td>placeholder price</td>
-                                <td>A, B, C, D</td>
-                            </tr>
-
-                            <tr>
-                                <td>placeholder firm</td>
-                                <td>placeholder price</td>
-                                <td>A, B</td>
-                            </tr>
-
-                            <tr>
-                                <td>placeholder firm</td>
-                                <td>placeholder price</td>
-                                <td>A, B, C, D, E, F</td>
-                            </tr>
-
+                            {%endfor%}
                         </tbody>
-
                     </table>
 
                     <!-- Action Buttons -->
@@ -76,13 +51,19 @@
                         </a>
 
                         <!-- ADMIN ONLY -->
-                        {% if role == "admin" %}
+                        {%if id == 1%}
                         <a href="/modify" class="btn btn-warning">
                             Modify
                         </a>
-                        {% endif %}
+                        {%endif%}
 
                     </div>
+                    
+                    {%if error%}
+                    <div class="alert alert-danger mt-2" role = "alert">
+                        {{error}}
+                    </div>
+                    {%endif%}
 
                 </div>
             </div>

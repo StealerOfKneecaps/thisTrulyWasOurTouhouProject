@@ -28,7 +28,7 @@
                             <div class="mb-3">
                                 <label for="email" class="form-label">email</label>
                                 <input 
-                                    type="text" 
+                                    type="email" 
                                     class="form-control" 
                                     id="email" 
                                     name="email"
@@ -45,13 +45,13 @@
                                     name="password"
                                     required
                                 >
+                            </div>
                                 {%if error%}
                                 <div class="alert alert-danger mt-2" role = "alert">
                                     {{error}}
                                 </div>
                                 {%endif%}
-                            </div>
-
+                                
                             <div class="d-grid">
                                 <button type="submit" class="btn btn-primary">
                                     Log In

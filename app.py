@@ -1,8 +1,9 @@
 from flask import Flask, render_template, session, request, redirect, url_for
+from datetime import datetime, timedelta
 import sqlite3
 app = Flask(__name__)
-
-
+app.secret_key = 
+"Miwa from JJK THE GOAT"
 
 def init_db(): #defining init_db() to initialize the database
     
@@ -25,6 +26,8 @@ def init_db(): #defining init_db() to initialize the database
     age INTEGER NOT NULL,
     approxSalary INTEGER NOT NULL,
     existMedCondition INTEGER NOT NULL,
+    peopleTraveling INTEGER NOT NULL,
+    tripDuration INTEGER NOT NULL,
     cacheCreatedAt TIMESTAMP NOT NULL,
     FOREIGN KEY (email) REFERENCES users(email)
     )
@@ -36,9 +39,12 @@ def init_db(): #defining init_db() to initialize the database
     ageRate REAL NOT NULL,
     salaryRate REAL NOT NULL,
     existMedCondRate REAL NOT NULL,
-    travelDurationRate REAL NOT NULL
+    travelDurationRate REAL NOT NULL,
+    peopleTravelRate REAL NOT NULL,
+    coverage TEXT NOT NULL 
     )
     """)
+
     #Close connection objects
     connection.commit()
     connection.close() 
@@ -80,7 +86,8 @@ def login():
             realPassword = user[1] #fuckin tuples bruh
             
             if realPassword == password:
-                session["id"] = user[0]
+                session["id"] = user_id
+                session["email"] = email
                 return redirect(url_for("mainThing"))
             else:
                 error = "bro think he slick skull emoji you are NOT miwa kasumi from jjk"
@@ -89,14 +96,26 @@ def login():
 
     return render_template("login.html", error = error)
 
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     error = None
     if request.method == "POST":
-        connection = sqlite3.connect("database.db")
-        cursor = connection.cursor()
         email = request.form["email"]
         password = request.form["password"]
+        password_conf = request.form["confirm_password"]
+        
+        if password_conf != password:
+            error = "bro made a typo in the password"
+            return render_template("register.html", error=error)
+
+        connection = sqlite3.connect("database.db")
+        cursor = connection.cursor()
+
+
         try:
             cursor.execute("INSERT INTO users (email, passwordHash) VALUES (?, ?)", (email, password))
             connection.commit()
@@ -114,28 +133,111 @@ def register():
 
     return render_template("register.html", error=error)
 
-@app.route("/about")
-def about():
-    return render_template("about.html")
-    
 @app.route("/mainThing", methods=["GET","POST"])
+@login_required
 def mainThing():
-    @login_required
-    return render_template("mainThing.html")
 
-@app.route("/resultsPage", methods=["GET", "POST"])
-def resultsPage():
-    @login_required
-    connection = sqlite3.connect("database.db")
-    cursor = conn.cursor()
     if request.method == "POST":
-        name = request.form["name"]
-        cursor.execute("INSERT INTO userInfoCache (name, ) VALUES (?,)", (name, ))
+        connection = sqlite3.connect("database.db")
+        cursor = connection.cursor()
+        email = session["email"]
+
+# clear the expired cache (super duper important)
+        
+        exp_time = datetime.now() - timedelta(days=1) #exp_time is one day before current time
+        cursor.execute("""
+        DELETE FROM userInfoCache
+        WHERE cacheCreatedAt < ?
+        """, (exp_time,)) #delete anything created before a day earlier than today
+        connection.commit()
+
+        age = request.form["age"]
+        salaryApprox = request.form["salary"]
+        noPeopleTraveling = request.form["people"]
+        durationTrip = request.form["duration"]
+        if request.form["medical"] == "yes":
+            existMed = 1
+        else:
+            existMed = 0
+
+        cursor.execute("""INSERT OR REPLACE INTO userInfoCache (email, age, approxSalary, existMedCondition, peopleTraveling, tripDuration, cacheCreatedAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (session["email"], age, salaryApprox, existMed, noPeopleTraveling, durationTrip, datetime.now()))
         connection.commit()
         connection.close()
-    return render_template("resultsPage.html")
+        return redirect(url_for("resultsPage"))
+    return render_template("mainThing.html")
 
 
+@app.route("/resultsPage", methods=["GET", "POST"])
+@login_required
+def resultsPage():
+    error = None
+    connection = sqlite3.connect("database.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT age, approxSalary, existMedCondition, peopleTraveling, tripDuration
+    FROM userInfoCache 
+    WHERE email = ? 
+    """, (session["email"],)
+    )
+
+    user = cursor.fetchone()
+    if not user:
+        connection.close()
+        return render_template("resultsPage.html", error="Before viewing results, please enter information", results = [], id=session.get("id"))
+    age, salApprox, medExist, people, duration = user
+
+    cursor.execute("""
+    SELECT name, baseRate, ageRate, salaryRate, existMedCondRate, travelDurationRate, peopleTravelRate, coverage
+    FROM firms
+    """)
+    firms = cursor.fetchall()
+    
+    results = []
+
+    for firm in firms:
+        name, base, ageRate, salaryRate, medRate, durRate, peopleRate, coverage = firm
+        price = base
+        price += (ageRate * int(age)) + (salaryRate * int(salApprox)) + (durRate * int(duration)) + (peopleRate * int(people))
+        if medExist == 1:
+            price += medRate
+        firmResult = {
+            "name": name,
+            "price": round(price, 2),
+            "coverage": []
+        }
+
+        coverage = str(coverage)
+        if len(coverage)<4: #for whatever reason
+            while len(coverage)<4:
+                coverage+="0"
+        
+        if coverage[0]=="1":
+            firmResult["coverage"].append("A")
+        if coverage[1]=="1":
+            firmResult["coverage"].append("B")
+        if coverage[2]=="1":
+            firmResult["coverage"].append("C")
+        if coverage[3]=="1":
+            firmResult["coverage"].append("D")
+        results.append(firmResult)
+        results.sort(key=lambda x: x[1]) 
+
+        resultsPrice = results
+
+        results.sort(key=lambda x: x[0])
+        resultsMiwa = results
+
+        results.
+    connection.close()
+    return render_template("resultsPage.html",results=results, id=session.get("id"))
+
+@app.route("/logoutTemp")
+def logoutTemp():
+    session.clear()
+    return redirect(url_for("login"))
 
 if __name__ == "__main__":
     app.run(debug=True)
