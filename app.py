@@ -97,9 +97,9 @@ def login():
                 session["email"] = email
                 return redirect(url_for("mainThing"))
             else:
-                error = "bro think he slick skull emoji you are NOT miwa kasumi from jjk"
+                error = "Password is incorrect"
         else:
-            error = "bro does not exist wilted_rose emoji"
+            error = "Email is incorrect"
 
     return render_template("login.html", error = error)
 
@@ -116,7 +116,7 @@ def register():
         password_conf = request.form["confirm_password"]
         
         if password_conf != password:
-            error = "bro made a typo in the password"
+            error = "Passwords do not match"
             return render_template("register.html", error=error)
 
         connection = sqlite3.connect("database.db")
@@ -130,11 +130,11 @@ def register():
         except sqlite3.IntegrityError as e:
             msg = str(e)
             if "UNIQUE" in msg:
-                error = "bro guess who's email exists already"
+                error = "Account already exists with email"
             elif "CHECK" in msg:
-                error = "lmao nice try bro tried to input a bad email"
+                error = "Please input a proper email"
             else:
-                error = "lwk something went wrong lmao I have on clue waht"
+                error = "Something went wrong   "
         finally:
             connection.close()
 
@@ -325,7 +325,7 @@ def modify():
                     connection.commit()
                     success = "Password reset successfully"
             except Exception as e:
-                error = f"something went wrong somehow lol: {e}"
+                error = f"something went wrong somehow: {e}"
             finally:
                 connection.close()
                 
