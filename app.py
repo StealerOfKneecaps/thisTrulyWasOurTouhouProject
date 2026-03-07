@@ -134,7 +134,7 @@ def register():
             elif "CHECK" in msg:
                 error = "Please input a proper email"
             else:
-                error = "Something went wrong   "
+                error = "Something went wrong"
         finally:
             connection.close()
 
@@ -282,7 +282,7 @@ def modify():
             try:
                 name = request.form["name"]
                 if not name:
-                    raise ValueError("gng why input empty name skull emoji") #python error for invalid input
+                    raise ValueError("Input can not be empty.") #python error for invalid input
 
                 baseRate = float(request.form["baseRate"])
                 ageRate = float(request.form["ageRate"])
@@ -299,7 +299,7 @@ def modify():
                 )
                 
                 if coverage == "0000":
-                    raise ValueError("what u tryin to do")
+                    raise ValueError("Please make sure at least one box is checked.")
                 
                 cursor.execute("""
                 INSERT INTO firms (name, baseRate, ageRate, salaryRate, existMedCondRate, travelDurationRate, peopleTravelRate, coverage)
