@@ -25,7 +25,13 @@
             <div class="card shadow-sm">
                 <div class="card-body">
 
-                    <table class="table table-bordered text-center align-middle">
+                    <div class="btn-group mb-3" role="group">
+                        <a href="?sort=price" class="btn btn-outline-primary {% if sort == 'price' %}active{% endif %}">Price</a>
+                        <a href="?sort=alpha" class="btn btn-outline-primary {% if sort == 'alpha' %}active{% endif %}">A-Z</a>
+                        <a href="?sort=cover" class="btn btn-outline-primary {% if sort == 'cover' %}active{% endif %}">Coverage</a>
+                    </div>
+                    
+                        <table class="table table-bordered text-center align-middle">
 
                         <thead class="table-light">
                             <tr>
@@ -34,11 +40,7 @@
                                 <th>Coverage</th>
                             </tr>
                         </thead>
-                        <div class="btn-group mb-3" role="group">
-                            <a href="?sort=price" class="btn btn-outline-primary {% if sort == 'price' %}active{% endif %}">Price</a>
-                            <a href="?sort=alpha" class="btn btn-outline-primary {% if sort == 'alpha' %}active{% endif %}">A-Z</a>
-                            <a href="?sort=cover" class="btn btn-outline-primary {% if sort == 'cover' %}active{% endif %}">Coverage</a>
-                        </div>
+
                         <tbody>
                             {%for r in results%}
                             <tr>

@@ -73,7 +73,6 @@ def login_required(func):
 @app.route("/", methods=["GET","POST"])
 def login():
     error = None 
-    session.clear()
     if request.method == "POST":
         connection = sqlite3.connect("database.db")
         cursor = connection.cursor()
@@ -93,6 +92,7 @@ def login():
             realPassword = user[1] #fuckin tuples bruh
             
             if check_password_hash(realPassword, password):
+                session.clear()
                 session["id"] = user_id
                 session["email"] = email
                 return redirect(url_for("mainThing"))
@@ -126,7 +126,6 @@ def register():
         try:
             cursor.execute("INSERT INTO users (email, passwordHash) VALUES (?, ?)", (email, generate_password_hash(password)))
             connection.commit()
-            connection.close()
             return redirect(url_for("login"))
         except sqlite3.IntegrityError as e:
             msg = str(e)
@@ -299,7 +298,7 @@ def modify():
                     request.form.get("coverageD", "0")[0]
                 )
                 
-                if coverage = "0000":
+                if coverage == "0000":
                     raise ValueError("what u tryin to do")
                 
                 cursor.execute("""
@@ -309,7 +308,7 @@ def modify():
                 success = "added firm :D"
             
             except ValueError as valE:
-                error = "The value for " + valE + " was invalid."
+                error = f"The value for {valE} was invalid."
             except sqlite3.IntegrityError:
                 error = "The firm name already exists."
             finally:
@@ -317,18 +316,18 @@ def modify():
         elif action == "resetPassword":
             try:
                 email = request.form["resetEmail"]
-                new_passsword = request.form["newPassword"]
+                new_password = request.form["newPassword"]
                 cursor.execute("UPDATE users SET passwordHash=? WHERE email = ?", (generate_password_hash(new_password), email))
 
-                if cusror.rowcount == 0: #if no rows matched email, then:
+                if cursor.rowcount == 0: #if no rows matched email, then:
                     error = "no user exists with that email"
                 else: 
                     connection.commit()
                     success = "Password reset successfully"
-                except Exception as e:
-                    error = "something went wrong somehow lol: " + e
-                finally:
-                    connection.close()
+            except Exception as e:
+                error = f"something went wrong somehow lol: {e}"
+            finally:
+                connection.close()
                 
     return render_template("modify.html", error=error, success=success)
 
