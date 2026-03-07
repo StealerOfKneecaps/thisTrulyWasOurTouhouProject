@@ -15,6 +15,10 @@
 
 <div class="container mt-5">
 
+    <div class="text-end mb-3">
+        <a href="/logoutTemp" class="btn btn-sm btn-danger">Logout</a>
+    </div>
+
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
 
@@ -27,38 +31,60 @@
                     </p>
 
                     <form method="POST">
+                        {% if cached %}
+                            {% set ageVal = cached[0] %}
+                            {% set salaryVal = cached[1] %}
+                            {% set peopleVal = cached[3] %}
+                            {% set durationVal = cached[4] %}
+
+                            {% set medVal = cached[2] %}
+
+                        {% else %}
+                            {% set ageVal = '' %}
+                            {% set salaryVal = '' %}
+                            {% set peopleVal = '' %}
+                            {% set durationVal = '' %}
+                            
+                            {% set medVal = '' %}
+
+                        {% endif %} 
+                        <!-- setting cached values except for med condition because that ones painful -->
 
                         <!-- Age -->
                         <div class="mb-3">
                             <label class="form-label">Age</label>
-                            <input type="number" name="age" class="form-control" required>
+                            <input type="number" name="age" class="form-control"
+                                value="{{ ageVal}}" required>
                         </div>
 
                         <!-- Salary -->
                         <div class="mb-3">
                             <label class="form-label">Approximate Per-Year Salary</label>
-                            <input type="number" name="salary" class="form-control" required>
+                            <input type="number" name="salary" class="form-control"
+                                value ="{{ salaryVal }}" required>
                         </div>
 
                         <!-- People traveling -->
                         <div class="mb-3">
                             <label class="form-label">Number of People Traveling</label>
-                            <input type="number" name="people" class="form-control" required>
+                            <input type="number" name="people" class="form-control" 
+                                value = "{{ peopleVal }}" required>
                         </div>
 
                         <!-- Duration -->
                         <div class="mb-3">
                             <label class="form-label">Trip Duration (days)</label>
-                            <input type="number" name="duration" class="form-control" required>
+                            <input type="number" name="duration" class="form-control" 
+                            value="{{durationVal }}" required>
                         </div>
 
                         <!-- Medical condition -->
                         <div class="mb-4">
                             <label class="form-label">Existing Medical Condition</label>
                             <select name="medical" class="form-select" required>
-                                <option value="" disabled selected>Select...</option>
-                                <option value="yes">Yes</option>
-                                <option value="no">No</option>
+                                <option value="" disabled {%if medVal == ''%}selected{%endif%}>Select...</option>
+                                <option value="yes"{%if medVal == 1%}selected{%endif%}>Yes</option>
+                                <option value="no"{%if medVal == 0%}selected{%endif%}>No</option>
                             </select>
                         </div>
 

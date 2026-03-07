@@ -1,9 +1,9 @@
 from flask import Flask, render_template, session, request, redirect, url_for
 from datetime import datetime, timedelta
+from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 app = Flask(__name__)
-app.secret_key = 
-"Miwa from JJK THE GOAT"
+app.secret_key = "Miwa from JJK THE GOAT"
 
 def init_db(): #defining init_db() to initialize the database
     
@@ -53,7 +53,14 @@ def init_db(): #defining init_db() to initialize the database
 init_db() 
 # Using flask. routes the homepage / to login, using the methods GET and POST.
 # GET indicate the user is visiting the page, thus things are required to be gotten, while POST indicate the user submits a form.
+@app.errorhandler(sqlite3.OperationalError)
+def db_error(e):
+    return render_template("error.html"), 500
 
+@app.errorhandler(500)
+def server_error(e):
+    return render_template("error.html"), 500
+    
 def login_required(func):
     from functools import wraps
     @wraps(func)
@@ -66,7 +73,7 @@ def login_required(func):
 @app.route("/", methods=["GET","POST"])
 def login():
     error = None 
-
+    session.clear()
     if request.method == "POST":
         connection = sqlite3.connect("database.db")
         cursor = connection.cursor()
@@ -85,7 +92,7 @@ def login():
             user_id=user[0]
             realPassword = user[1] #fuckin tuples bruh
             
-            if realPassword == password:
+            if check_password_hash(realPassword, password):
                 session["id"] = user_id
                 session["email"] = email
                 return redirect(url_for("mainThing"))
@@ -117,7 +124,7 @@ def register():
 
 
         try:
-            cursor.execute("INSERT INTO users (email, passwordHash) VALUES (?, ?)", (email, password))
+            cursor.execute("INSERT INTO users (email, passwordHash) VALUES (?, ?)", (email, generate_password_hash(password)))
             connection.commit()
             connection.close()
             return redirect(url_for("login"))
@@ -129,6 +136,7 @@ def register():
                 error = "lmao nice try bro tried to input a bad email"
             else:
                 error = "lwk something went wrong lmao I have on clue waht"
+        finally:
             connection.close()
 
     return render_template("register.html", error=error)
@@ -136,10 +144,9 @@ def register():
 @app.route("/mainThing", methods=["GET","POST"])
 @login_required
 def mainThing():
-
+    connection = sqlite3.connect("database.db")
+    cursor = connection.cursor()
     if request.method == "POST":
-        connection = sqlite3.connect("database.db")
-        cursor = connection.cursor()
         email = session["email"]
 
 # clear the expired cache (super duper important)
@@ -166,10 +173,19 @@ def mainThing():
         connection.commit()
         connection.close()
         return redirect(url_for("resultsPage"))
-    return render_template("mainThing.html")
+
+    cursor.execute("""
+        SELECT age, approxSalary, existMedCondition, peopleTraveling, tripDuration
+        FROM userInfoCache
+        WHERE email = ?
+    """, (session["email"],))
+    cached = cursor.fetchone()
+    
+    connection.close()
+    return render_template("mainThing.html", cached=cached)
 
 
-@app.route("/resultsPage", methods=["GET", "POST"])
+@app.route("/resultsPage", methods=["GET"])
 @login_required
 def resultsPage():
     error = None
@@ -182,7 +198,8 @@ def resultsPage():
     WHERE email = ? 
     """, (session["email"],)
     )
-
+    sort = request.args.get("sort", "price")
+        
     user = cursor.fetchone()
     if not user:
         connection.close()
@@ -223,21 +240,97 @@ def resultsPage():
         if coverage[3]=="1":
             firmResult["coverage"].append("D")
         results.append(firmResult)
-        results.sort(key=lambda x: x[1]) 
 
-        resultsPrice = results
-
-        results.sort(key=lambda x: x[0])
-        resultsMiwa = results
-
-        results.
+    resultsPrice = sorted(results, key=lambda x: x["price"])
+    resultsAlpha = sorted(results, key=lambda x: x["name"])
+    resultsCover = sorted(results, key=lambda x: len(x["coverage"]), reverse=True)
+    
+    sorts = {"price": resultsPrice, "alpha": resultsAlpha, "cover": resultsCover}
+    display = sorts.get(sort, resultsPrice)
+    
     connection.close()
-    return render_template("resultsPage.html",results=results, id=session.get("id"))
+    return render_template("resultsPage.html", results=display, sort=sort, id=session.get("id"))
 
 @app.route("/logoutTemp")
 def logoutTemp():
     session.clear()
     return redirect(url_for("login"))
+
+@app.route("/clearCache")
+@login_required
+def clearCache():
+    connection = sqlite3.connect("database.db")
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM userInfoCache WHERE email = ?",(session["email"],))
+    connection.commit()
+    connection.close()
+    return redirect(url_for("mainThing"))
+
+@app.route("/modify", methods=["GET", "POST"])
+@login_required
+def modify():
+    if session["id"]!=1:
+        return redirect(url_for("mainThing"))
+    error = None
+    success = None
+
+    if request.method == "POST":
+        action = request.form.get("action")
+        connection = sqlite3.connect("database.db")
+        cursor = connection.cursor()
+
+        if action == "addFirm":
+            try:
+                name = request.form["name"]
+                if not name:
+                    raise ValueError("gng why input empty name skull emoji") #python error for invalid input
+
+                baseRate = float(request.form["baseRate"])
+                ageRate = float(request.form["ageRate"])
+                salaryRate = float(request.form["salaryRate"])
+                existMedCondRate = float(request.form["existMedCondRate"])
+                travelDurationRate = float(request.form["travelDurationRate"])
+                peopleTravelRate = float(request.form["peopleTravelRate"])
+
+                coverage = (
+                    request.form.get("coverageA", "0")[0] + #Get from coverageA, the first value (which is if it checked or not.) If it doesn't exist, return 0
+                    request.form.get("coverageB", "0")[0] +
+                    request.form.get("coverageC", "0")[0] +
+                    request.form.get("coverageD", "0")[0]
+                )
+                
+                if coverage = "0000":
+                    raise ValueError("what u tryin to do")
+                
+                cursor.execute("""
+                INSERT INTO firms (name, baseRate, ageRate, salaryRate, existMedCondRate, travelDurationRate, peopleTravelRate, coverage)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""", (name, baseRate, ageRate, salaryRate, existMedCondRate, travelDurationRate, peopleTravelRate, coverage))
+                connection.commit()
+                success = "added firm :D"
+            
+            except ValueError as valE:
+                error = "The value for " + valE + " was invalid."
+            except sqlite3.IntegrityError:
+                error = "The firm name already exists."
+            finally:
+                connection.close()
+        elif action == "resetPassword":
+            try:
+                email = request.form["resetEmail"]
+                new_passsword = request.form["newPassword"]
+                cursor.execute("UPDATE users SET passwordHash=? WHERE email = ?", (generate_password_hash(new_password), email))
+
+                if cusror.rowcount == 0: #if no rows matched email, then:
+                    error = "no user exists with that email"
+                else: 
+                    connection.commit()
+                    success = "Password reset successfully"
+                except Exception as e:
+                    error = "something went wrong somehow lol: " + e
+                finally:
+                    connection.close()
+                
+    return render_template("modify.html", error=error, success=success)
 
 if __name__ == "__main__":
     app.run(debug=True)

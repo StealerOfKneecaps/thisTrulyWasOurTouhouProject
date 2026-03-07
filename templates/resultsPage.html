@@ -13,6 +13,9 @@
 <body class="bg-light">
 
 <div class="container mt-5">
+    <div class="text-end mb-3">
+        <a href="/logoutTemp" class="btn btn-sm btn-danger">Logout</a>
+    </div>
 
     <h2 class="text-center mb-4">Available Premiums</h2>
 
@@ -31,12 +34,16 @@
                                 <th>Coverage</th>
                             </tr>
                         </thead>
-
+                        <div class="btn-group mb-3" role="group">
+                            <a href="?sort=price" class="btn btn-outline-primary {% if sort == 'price' %}active{% endif %}">Price</a>
+                            <a href="?sort=alpha" class="btn btn-outline-primary {% if sort == 'alpha' %}active{% endif %}">A-Z</a>
+                            <a href="?sort=cover" class="btn btn-outline-primary {% if sort == 'cover' %}active{% endif %}">Coverage</a>
+                        </div>
                         <tbody>
                             {%for r in results%}
                             <tr>
                                 <td>{{r.name}}</td>
-                                <td>{{r.price}}</td>
+                                <td>${{"{:,.2f}".format(r.price).replace(",", " ") }}</td>
                                 <td>{{r.coverage | join(", ")}}</td>
                             </tr>
                             {%endfor%}
@@ -46,10 +53,9 @@
                     <!-- Action Buttons -->
                     <div class="d-flex justify-content-between mt-4">
 
-                        <a href="/quote" class="btn btn-outline-secondary">
+                        <a href="/clearCache" class="btn btn-outline-secondary">
                             Clear My Information
                         </a>
-
                         <!-- ADMIN ONLY -->
                         {%if id == 1%}
                         <a href="/modify" class="btn btn-warning">
