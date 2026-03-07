@@ -89,7 +89,7 @@ def login():
 
         if user:
             user_id=user[0]
-            realPassword = user[1] #fuckin tuples bruh
+            realPassword = user[1]
             
             if check_password_hash(realPassword, password):
                 session.clear()
