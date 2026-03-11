@@ -240,15 +240,27 @@ def resultsPage():
             firmResult["coverage"].append("D")
         results.append(firmResult)
 
+
+    selected_covers = request.args.getlist("cover")
+    if selected_covers:
+        results = [r for r in results if all(c in r["coverage"] for c in selected_covers)]
+    if not results:
+        connection.close()
+        return render_template("resultsPage.html", results=[], sort=sort, id=session.get("id"), min_price=None, age=age, salary=salApprox, people=people, duration=duration, medical=medExist, selected_covers=selected_covers, error="No firms match the selected coverage filters.")
+
+
+
     resultsPrice = sorted(results, key=lambda x: x["price"])
     resultsAlpha = sorted(results, key=lambda x: x["name"])
-    resultsCover = sorted(results, key=lambda x: len(x["coverage"]), reverse=True)
+    resultsCover = sorted(results, key=lambda x: -len(x["coverage"]))
     
     sorts = {"price": resultsPrice, "alpha": resultsAlpha, "cover": resultsCover}
     display = sorts.get(sort, resultsPrice)
-    
+    min_price = min(results, key=lambda x: x["price"])["price"]
+
+
     connection.close()
-    return render_template("resultsPage.html", results=display, sort=sort, id=session.get("id"))
+    return render_template("resultsPage.html", results=display, sort=sort, id=session.get("id"), min_price=min_price, age=age, salary=salApprox, people=people, duration=duration, medical=medExist, selected_covers=selected_covers)
 
 @app.route("/logoutTemp")
 def logoutTemp():
