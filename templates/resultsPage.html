@@ -24,9 +24,6 @@
 
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <div class="alert alert-info mb-3">
-                        Quotes calculated for: Age {{age}}, Salary ${{salary}} per year, {{people}} people travelling, {{duration}} days trip, {% if medical == 1 %}with{% else %}without{% endif %} existing medical condition
-                    </div>
                     <form method="GET">
                         <input type="hidden" name="sort" value="{{ sort }}">
                         {%for letter in ["A", "B", "C", "D"]%}
@@ -93,6 +90,9 @@
                     </div>
                     {%endif%}
 
+                </div>
+                <div class="alert alert-info mb-3">
+                    Quotes calculated for: Age {{age}}, Salary ${{salary}} per year, {{people}} people travelling, {{duration}} days trip, {% if medical == 1 %}with{% else %}without{% endif %} existing medical condition
                 </div>
             </div>
 

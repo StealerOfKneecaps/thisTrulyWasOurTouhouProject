@@ -83,7 +83,7 @@ def login():
         
 
 
-        cursor.execute("SELECT id, passwordHash FROM users WHERE email = ?", (email, ))
+        cursor.execute("SELECT id, passwordHash FROM users WHERE email=?", (email, ))
         user = cursor.fetchone()
         connection.close()
 
@@ -101,7 +101,7 @@ def login():
         else:
             error = "Email is incorrect"
 
-    return render_template("login.html", error = error)
+    return render_template("login.html", error=error)
 
 @app.route("/about")
 def about():
